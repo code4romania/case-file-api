@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CaseFile.Entities.Answer" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAAACgCAACAAQAAAAAgAAAAAIA=</HashCode>
+      <FileName>Answer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Beneficiary" Collapsed="true">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAhgAABAAAQAACIAAEAACwAAAAAAACCQAAAAAAABCA=</HashCode>
+      <FileName>Beneficiary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.CaseFileContext" Collapsed="true">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAQgQCAAAgAAAAAAAAAAQAAAEAAAAACERAAAAABABAA=</HashCode>
+      <FileName>CaseFileContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.CaseFileContextExtensions" Collapsed="true">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAACAAEIAAAAAAASAAARABAAAAgIAAAQAABAAAAA=</HashCode>
+      <FileName>CaseFileContextExtensions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.City" Collapsed="true">
+    <Position X="0.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>City.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.County" Collapsed="true">
+    <Position X="2.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAAAAgAAQAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>County.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.EfBuilderExtensions" Collapsed="true">
+    <Position X="4" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CaseFileContextExtension.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Family" Collapsed="true">
+    <Position X="5.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Family.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Form" Collapsed="true">
+    <Position X="0.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAgAgAEAAAAAgAAAAACAAAAjAAQgAAAAAAAA=</HashCode>
+      <FileName>Form.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.FormSection" Collapsed="true">
+    <Position X="2.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAAgAAAAAAAgAAAAACAAAAAEAAAAAAEAAAA=</HashCode>
+      <FileName>FormSection.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Ngo" Collapsed="true">
+    <Position X="4" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAEAAAAAQAAAAAAIBAAQgAAAAAAAA=</HashCode>
+      <FileName>Ngo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Note" Collapsed="true">
+    <Position X="5.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABBAAAAAAAAAAAAAAAAACgCACAAAAAEAAAACAQAAIA=</HashCode>
+      <FileName>Note.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Option" Collapsed="true">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAAAQAgQAAAAAAAAAAAAAAACAAAAAA=</HashCode>
+      <FileName>Option.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.OptionToQuestion" Collapsed="true">
+    <Position X="2.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAACAAAAAAAAQAEQAAAAAQAAAA=</HashCode>
+      <FileName>OptionToQuestion.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Question" Collapsed="true">
+    <Position X="4" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAgAAAAAAAAAgQAAACAAAAAAAAAAACAQQAAA=</HashCode>
+      <FileName>Question.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.User" Collapsed="true">
+    <Position X="5.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgQCAAACAQAAAAEAAgAAwAAAAAAADCQQgAIAAAAAg=</HashCode>
+      <FileName>User.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Migrations.Initial" Collapsed="true">
+    <Position X="0.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAI=</HashCode>
+      <FileName>Migrations\20200616161628_Initial.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Migrations.BeneficiaryGender" Collapsed="true">
+    <Position X="0.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAI=</HashCode>
+      <FileName>Migrations\20200621205447_BeneficiaryGender.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Migrations.UserUpdate" Collapsed="true">
+    <Position X="2.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAI=</HashCode>
+      <FileName>Migrations\20200623064127_UserUpdate.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CaseFile.Entities.Migrations.CaseFileContextModelSnapshot" Collapsed="true">
+    <Position X="2.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Migrations\CaseFileContextModelSnapshot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="CaseFile.Entities.CivilStatus">
+    <Position X="0.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAAAAAAAAIAAAAAAAAAAAAAAAEACAA=</HashCode>
+      <FileName>Beneficiary.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="CaseFile.Entities.FormType">
+    <Position X="2.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAAAAAAAAAEAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>Form.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="CaseFile.Entities.QuestionType">
+    <Position X="4" Y="4.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAACAAAAAACAAAAAAAAAAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>QuestionType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="CaseFile.Entities.Role">
+    <Position X="6" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAgAQgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>User.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="CaseFile.Entities.Type">
+    <Position X="0.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BJEAAAAQAAAAAAAAEAAAAAAAAAAAAAAgAAAAAQAAAAA=</HashCode>
+      <FileName>User.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="CaseFile.Entities.FamilyRole" Collapsed="true">
+    <Position X="8.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAQAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>Beneficiary.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="CaseFile.Entities.Gender">
+    <Position X="2.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Beneficiary.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

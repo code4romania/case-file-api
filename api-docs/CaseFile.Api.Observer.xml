@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CaseFile.Api.Business</name>
+    </assembly>
+    <members>
+        <member name="M:CaseFile.Api.Business.Controllers.BeneficiaryController.NewBeneficiary(CaseFile.Api.Business.Models.NewBeneficiaryModel)">
+            <summary>
+             Adds an beneficiary.
+            </summary>
+            <param name="model"></param>
+            <returns>Id of the new beneficiary</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.BeneficiaryController.EditBeneficiary(CaseFile.Api.Business.Models.EditBeneficiaryModel)">
+            <summary>
+            Edits beneficiary information.
+            </summary>
+            <param name="model"></param>
+            <returns>Boolean indicating whether or not the beneficiary was changed successfully</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.BeneficiaryController.DeleteBeneficiary(System.Int32)">
+            <summary>
+            Deletes a beneficiary
+            </summary>
+            <param name="beneficiaryId">The Beneficiary id</param>
+            <returns>Boolean indicating whether or not the beneficiary was deleted successfully</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.UserController.NewUser(CaseFile.Api.Business.Models.NewUserModel)">
+            <summary>
+             Adds an user.
+            </summary>
+            <param name="model"></param>
+            <returns>The id of the new user.</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.UserController.EditUser(CaseFile.Api.Business.Models.EditUserModel)">
+            <summary>
+            Edits User information.
+            </summary>
+            <param name="model"></param>
+            <returns>Boolean indicating whether or not the user was changed successfully</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.UserController.DeleteUser(System.Int32)">
+            <summary>
+            Deletes an user.
+            </summary>
+            <param name="userId">The User id</param>
+            <returns>Boolean indicating whether or not the user was deleted successfully</returns>
+        </member>
+        <member name="P:CaseFile.Api.Business.Models.ActiveObserverFilter.CountyCodes">
+            <summary>
+            A list of counties to filter the observers
+            [ "B", "AB", "CT" ]
+            </summary>
+        </member>
+        <member name="P:CaseFile.Api.Business.Models.ActiveObserverFilter.FromPollingStationNumber">
+            <summary>
+            This helps filtering the active observers starting from the specified PollingStation number
+            </summary>
+        </member>
+        <member name="P:CaseFile.Api.Business.Models.ActiveObserverFilter.ToPollingStationNumber">
+            <summary>
+            The end interval for the PollingStation number
+            </summary>
+        </member>
+        <member name="P:CaseFile.Api.Business.Models.ActiveObserverFilter.CurrentlyCheckedIn">
+            <summary>
+            Get only the observers that have not left the polling stations selected in the interval
+            </summary>
+        </member>
+    </members>
+</doc>

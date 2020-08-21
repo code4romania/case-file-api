@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CaseFile.Api.Auth</name>
+    </assembly>
+    <members>
+        <member name="T:CaseFile.Api.Auth.Controllers.Authorization">
+            <inheritdoc />
+        </member>
+        <member name="M:CaseFile.Api.Auth.Controllers.Authorization.#ctor(Microsoft.Extensions.Options.IOptions{CaseFile.Api.Core.Models.JwtIssuerOptions},Microsoft.Extensions.Logging.ILogger{CaseFile.Api.Auth.Controllers.Authorization},MediatR.IMediator,Microsoft.Extensions.Options.IOptions{CaseFile.Api.Core.Options.MobileSecurityOptions},CaseFile.Api.Auth.Services.IAuthy,CaseFile.Api.Auth.Services.IAccountService)">
+            <inheritdoc />
+        </member>
+        <member name="M:CaseFile.Api.Auth.Controllers.Authorization.Test">
+            <summary>
+            Test action to get claims
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaseFile.Api.Auth.Controllers.Authorization.ToUnixEpochDate(System.DateTime)">
+            <returns>Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).</returns>
+        </member>
+        <member name="T:CaseFile.Api.Auth.Handlers.UserAuthenticationQueryHandler">
+            <summary>
+            Handles the query regarding the authentication of the user - checks the phone number and hashed pin against the database
+            </summary>
+        </member>
+        <member name="M:CaseFile.Api.Auth.Handlers.UserAuthenticationQueryHandler.#ctor(CaseFile.Entities.CaseFileContext,CaseFile.Api.Core.Services.IHashService,Microsoft.Extensions.Logging.ILogger{CaseFile.Api.Auth.Handlers.UserAuthenticationQueryHandler})">
+            <summary>
+            Constructor for dependency injection
+            </summary>
+            <param name="context">The EntityFramework context</param>
+            <param name="hash">Implementation of the IHashService to be used to generate the hashes. It can either be `HashService` or `ClearTextService`.</param>
+        </member>
+        <member name="T:CaseFile.Api.Auth.Queries.ApplicationUser">
+            <summary>
+            Model received from client applications in order to perform the authentication
+            </summary>
+        </member>
+        <member name="P:CaseFile.Api.Auth.Queries.ApplicationUser.Email">
+            <summary>
+            Email's phone number
+            </summary>
+        </member>
+        <member name="P:CaseFile.Api.Auth.Queries.ApplicationUser.Password">
+            <summary>
+            PIN number used for authentication (should have received this number by SMS)
+            </summary>
+        </member>
+    </members>
+</doc>

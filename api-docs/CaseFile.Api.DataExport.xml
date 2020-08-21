@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CaseFile.Api.DataExport</name>
+    </assembly>
+    <members>
+        <member name="M:CaseFile.Api.DataExport.Controllers.DataExportController.GetMyData(System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <summary>
+            Exports all data (which data?) into a excel file
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaseFile.Api.DataExport.ExcelGeneratorBase.Export``1(System.Collections.Generic.List{``0},System.String,System.Boolean,System.String)">
+            <summary>
+            Common Code for the Export
+            It creates Workbook, Sheet, Generate Header Cells and returns HttpResponseMessage
+            </summary>
+            <typeparam name="T">Generic Class Type</typeparam>
+            <param name="exportData">Data to be exported</param>
+            <param name="fileName">Export File Name</param>
+            <param name="appendDateTimeInFileName">Specify if filename should contain when file was generated</param>
+            <param name="sheetName">First Sheet Name</param>
+            <returns></returns>
+        </member>
+        <member name="M:CaseFile.Api.DataExport.ExcelGeneratorBase.WriteData``1(System.Collections.Generic.List{``0})">
+            <summary>
+            Generic Definition to handle all types of List
+            Overrride this function to provide your own implementation
+            </summary>
+            <param name="exportData"></param>
+        </member>
+    </members>
+</doc>

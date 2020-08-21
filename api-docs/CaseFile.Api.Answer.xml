@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CaseFile.Api.Answer</name>
+    </assembly>
+    <members>
+        <member name="M:CaseFile.Api.Answer.Controllers.AnswersController.Get(System.Int32,System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Returns answers given by the specified user for the specified beneficiary and form
+            </summary>
+        </member>
+        <member name="M:CaseFile.Api.Answer.Controllers.AnswersController.PostAnswer(CaseFile.Api.Answer.Models.AnswerModelWrapper)">
+            <summary>
+            Saves the answers to one or more questions, for a form for a beneficiary.
+            An answer can have multiple options (OptionId) and potentially a free text (Value).
+            </summary>
+            <param name="answerModel">Beneficiary, list of options and the associated text of an option when
+            <code>IsFreeText = true</code></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
