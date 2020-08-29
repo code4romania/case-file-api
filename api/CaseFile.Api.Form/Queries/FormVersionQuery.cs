@@ -38,6 +38,17 @@ namespace CaseFile.Api.Form.Queries
         public int PageSize { get; set; }
     }
 
+    public class DeleteFormModel
+    {
+        public int FormId { get; set; }
+    }
+
+    public class DeleteFormCommand : IRequest<bool>
+    {
+        public int FormId { get; set; }
+        public int UserId { get; set; }
+    }
+
     public class FormListCommandProfile : Profile
     {
         public FormListCommandProfile()

@@ -25,7 +25,7 @@ namespace CaseFile.Api.Business.Controllers
 
         private int NgoId => this.GetIdOngOrDefault(_defaultNgoOptions.DefaultNgoId);
 
-        private int UserId => this.GetIdObserver();
+        private int UserId => this.GetCurrentUserId();
 
         public UserController(IMediator mediator, IMapper mapper, IOptions<DefaultNgoOptions> defaultNgoOptions)
         {
@@ -106,9 +106,26 @@ namespace CaseFile.Api.Business.Controllers
         /// </summary>
         /// <param name="userId">The User id</param>
         /// <returns>Boolean indicating whether or not the user was deleted successfully</returns>
-        [HttpDelete]
+        //[HttpDelete]
+        //[Produces(type: typeof(bool))]
+        //public async Task<IActionResult> DeleteUser(int userId)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    var command = _mapper.Map<DeleteUserCommand>(new DeleteUserModel { UserId = userId });
+        //    command.CurrentUserId = UserId;
+        //    var result = await _mediator.Send(command);
+
+        //    return Ok(result);
+        //}
+
+        [HttpPost]
+        [Route("deactivate")]
         [Produces(type: typeof(bool))]
-        public async Task<IActionResult> DeleteUser(int userId)
+        public async Task<IActionResult> DeactivateUser([FromBody]int userId)
         {
             if (!ModelState.IsValid)
             {
@@ -124,6 +141,9 @@ namespace CaseFile.Api.Business.Controllers
 
         [HttpPost]
         [Route("reset")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Reset([FromBody]ResetModel model)
         {
             if (string.IsNullOrEmpty(model.NewPassword) || string.IsNullOrEmpty(model.ConfirmPassword) 
@@ -135,7 +155,7 @@ namespace CaseFile.Api.Business.Controllers
             var result = await _mediator.Send(new ResetPasswordCommand
             {
                 NgoId = NgoId,
-                UserId = this.GetIdObserver(),
+                UserId = this.GetCurrentUserId(),
                 NewPassword = model.NewPassword,
                 ConfirmPassword = model.ConfirmPassword
             });
@@ -145,7 +165,7 @@ namespace CaseFile.Api.Business.Controllers
                 return NotFound();
             }
 
-            return Ok();
+            return Ok(new { message = "Parola a fost schimbata cu succes, puteti folosi aplicatia." });
         }
 
         [HttpGet]

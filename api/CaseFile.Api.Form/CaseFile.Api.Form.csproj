@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\OptionController.cs" />
+    <Compile Remove="Controllers\QuestionController.cs" />
+    <Compile Remove="Queries\AllQuestionsQuery.cs" />
+  </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>

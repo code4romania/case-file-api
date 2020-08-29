@@ -39,7 +39,7 @@
             <param name="model"></param>
             <returns>Boolean indicating whether or not the user was changed successfully</returns>
         </member>
-        <member name="M:CaseFile.Api.Business.Controllers.UserController.DeleteUser(System.Int32)">
+        <member name="M:CaseFile.Api.Business.Controllers.UserController.DeactivateUser(System.Int32)">
             <summary>
             Deletes an user.
             </summary>

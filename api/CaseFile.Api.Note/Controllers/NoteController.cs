@@ -39,28 +39,34 @@ namespace CaseFile.Api.Note.Controllers
 
 
         [HttpGet]
+        [ProducesResponseType(typeof(List<NoteModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<List<NoteModel>> Get(NoteQuery filter)
         {
             if (!filter.UserId.HasValue)
             {
-                filter.UserId = this.GetIdObserver();
+                filter.UserId = this.GetCurrentUserId();
             }
 
             return await _mediator.Send(filter);
         }
         /// <summary>
-        /// Aceasta ruta este folosita cand observatorul incarca o imagine sau un clip in cadrul unei note.
+        /// Aceasta ruta este folosita cand userul incarca o imagine sau un clip in cadrul unei note.
         /// Fisierului atasat i se da contenttype = Content-Type: multipart/form-data
-        /// Celalalte proprietati sunt de tip form-data
-        /// CodJudet:BU 
-        /// NumarSectie:3243
-        /// IdIntrebare: 201
-        /// TextNota: "asdfasdasdasdas"
-        /// API-ul va returna adresa publica a fisierului unde este salvat si obiectul trimis prin formdata
+        /// Celalalte proprietati sunt de tip form-data        
+        /// API-ul va returna adresa publica unde e salvat fisierul
         /// </summary>
         /// <param name="note"></param>
         /// <returns></returns>
         [HttpPost("upload")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<dynamic> Upload([FromForm]UploadNoteModel note)
         {
             if (!ModelState.IsValid)
@@ -68,14 +74,12 @@ namespace CaseFile.Api.Note.Controllers
                 return this.ResultAsync(HttpStatusCode.BadRequest);
             }
             
-            // todo: check if beneficiary exists
-
             var command = _mapper.Map<AddNoteCommand>(note);
             string fileAddress = null;
             if (note.File != null)
                 fileAddress = await _mediator.Send(new UploadFileCommand { File = note.File, UploadType = UploadType.Notes });
             
-            command.UserId = this.GetIdObserver();
+            command.UserId = this.GetCurrentUserId();
             command.AttachementPath = Request.GetDisplayUrl() + "?filename=" + fileAddress;
             command.BeneficiaryId = note.BeneficiaryId;
 
@@ -91,12 +95,15 @@ namespace CaseFile.Api.Note.Controllers
 
         // GET
         [HttpGet("upload")]
-        [AllowAnonymous]
+        [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Upload(string filename)
         {
             if (!string.IsNullOrEmpty(filename))
             {
-                var fullPath = _localFileOptions.StoragePaths[UploadType.Notes.ToString()] + "\\" + filename; //"\\notes\\" + filename; /* "\\home\\site\\wwwroot\\notes" */
+                var fullPath = _localFileOptions.StoragePaths[UploadType.Notes.ToString()] + "\\" + filename;
                 if (System.IO.File.Exists(fullPath))
                 {
                     Stream stream = System.IO.File.OpenRead(fullPath);

@@ -16,6 +16,7 @@ using System;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace CaseFile.Api.Business.Handlers
 {
@@ -38,7 +39,19 @@ namespace CaseFile.Api.Business.Handlers
         }
 
         public async Task<int> Handle(NewBeneficiaryCommand message, CancellationToken token)
-        {            
+        {
+            // check if operation is allowed
+            if(message.UserId > 0 && message.UserId != message.CurrentUserId)
+            {
+                var user = _context.Users.FirstOrDefault(u => u.UserId == message.UserId && u.Deleted == false);
+                var currentUser = _context.Users.FirstOrDefault(u => u.UserId == message.CurrentUserId && u.Deleted == false);
+
+                if (user.Role == Role.Assistant || user.NgoId != currentUser.NgoId)
+                {
+                    throw new UnauthorizedAccessException();
+                }
+            }
+
             var beneficiary = new Entities.Beneficiary
             {
                 BirthDate = message.BirthDate,
@@ -119,13 +132,15 @@ namespace CaseFile.Api.Business.Handlers
 
         public async Task<int> Handle(EditBeneficiaryCommand request, CancellationToken cancellationToken)
         {
+            // check that the logged in user is allowed to edit the beneficiary
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId);
+            
             var beneficiary = await _context.Beneficiaries.Include(b => b.UserForms).FirstOrDefaultAsync(b => b.BeneficiaryId == request.BeneficiaryId);
-            if (beneficiary == null)
+            if (beneficiary == null || currentUser.NgoId != beneficiary.User.NgoId || (currentUser.UserId != beneficiary.UserId && currentUser.Role == Role.Assistant))
             {
                 return -1;
             }
-            // TODO: handle assistent assignment update; family members update
-
+            
             if (beneficiary.BirthDate != request.BirthDate)
                 beneficiary.BirthDate = request.BirthDate;
             if (beneficiary.CityId != request.CityId)
@@ -210,10 +225,18 @@ namespace CaseFile.Api.Business.Handlers
             {
                 var beneficiary = await _context.Beneficiaries
                     .Include(b => b.UserForms).ThenInclude(f => f.Form).ThenInclude(f => f.FormSections).ThenInclude(s => s.Questions)
+                    .Include(b => b.User)
                     .FirstOrDefaultAsync(x => x.BeneficiaryId == request.BeneficiaryId, cancellationToken);
                 if (beneficiary == null)
                 {
                     return Result.Failure<BeneficiaryModel>($"Could not find beneficiary with id = {request.BeneficiaryId}");
+                }
+
+                // check that the logged in user is allowed to view the beneficiary info
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId);
+                if (currentUser.NgoId != beneficiary.User.NgoId)
+                {
+                    throw new UnauthorizedAccessException();
                 }
 
                 var beneficiaryModel = new BeneficiaryModel
@@ -249,10 +272,8 @@ namespace CaseFile.Api.Business.Handlers
             }
             catch (System.Exception e)
             {
-                //_logger.LogError(e.StackTrace);
                 _logger.LogError($"Unable to load beneficiary {request.BeneficiaryId}", e);
                 return Result.Failure<BeneficiaryModel>($"Unable to load beneficiary {request.BeneficiaryId}");
-                //return Result.Failure<BeneficiaryModel>(e.Message);
             }
         }
 
@@ -329,10 +350,8 @@ namespace CaseFile.Api.Business.Handlers
             }
             catch (System.Exception e)
             {
-                //_logger.LogError(e.StackTrace);
                 _logger.LogError($"Unable to send beneficiary info for {request.BeneficiaryId}", e);
                 return Result.Failure<bool>($"Unable to send beneficiary info for {request.BeneficiaryId}");
-                //return Result.Failure<BeneficiaryModel>(e.Message);
             }
         }
 

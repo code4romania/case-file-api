@@ -41,7 +41,7 @@ namespace CaseFile.Api.Auth.Services
 
             // create reset token that expires after 1 day
             user.ResetToken = RandomTokenString();
-            user.ResetTokenExpires = DateTime.UtcNow.AddDays(24);
+            user.ResetTokenExpires = DateTime.UtcNow.AddHours(24);
 
             _context.Users.Update(user);
             _context.SaveChanges();
@@ -93,13 +93,13 @@ namespace CaseFile.Api.Auth.Services
             string message;
             if (!string.IsNullOrEmpty(origin))
             {
-                var resetUrl = $"{origin}/authorization/reset-password?token={user.ResetToken}";
+                var resetUrl = $"{origin}/reset-password/{user.ResetToken}";
                 message = $@"<p>Va rugam sa folositi link-ul de mai jos pentru a va seta o parola noua. Link-ul va fi valid pentru 1 zi:</p>
                              <p><a href=""{resetUrl}"">{resetUrl}</a></p>";
             }
             else
             {
-                message = $@"<p>Please use the below token to reset your password with the <code>/authorization/reset-password</code> api route:</p>
+                message = $@"<p>Please use the below token to reset your password with the <code>/reset-password</code> api route:</p>
                              <p><code>{user.ResetToken}</code></p>";
             }
 

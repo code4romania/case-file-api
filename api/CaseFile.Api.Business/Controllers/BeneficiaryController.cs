@@ -24,7 +24,7 @@ namespace CaseFile.Api.Business.Controllers
         private readonly DefaultNgoOptions _defaultNgoOptions;
 
         //private int NgoId => this.GetIdOngOrDefault(_defaultNgoOptions.DefaultNgoId);
-        private int UserId => this.GetIdObserver();
+        private int UserId => this.GetCurrentUserId();
         
 
         public BeneficiaryController(IMediator mediator, IMapper mapper, IOptions<DefaultNgoOptions> defaultNgoOptions)
@@ -88,8 +88,6 @@ namespace CaseFile.Api.Business.Controllers
                 return BadRequest(ModelState);
             }
 
-            // TODO!!! if model.UserId ! = user.Id && user.Role == asistent throw not allowed operation error
-            // if allowed then set the assistent of the new beneficiary to model.UserId
             var command = _mapper.Map<NewBeneficiaryCommand>(model);
             command.CurrentUserId = UserId;
             var newId = await _mediator.Send(command);
@@ -110,9 +108,7 @@ namespace CaseFile.Api.Business.Controllers
             {
                 return BadRequest(ModelState);
             }
-
-            // TODO!!! if model.UserId ! = user.Id && user.Role == asistent throw not allowed operation error
-            // if allowed then set the assistent of the new beneficiary to model.UserId
+            
             var command = _mapper.Map<EditBeneficiaryCommand>(model);
             command.CurrentUserId = UserId;
             var id = await _mediator.Send(command);
@@ -123,10 +119,12 @@ namespace CaseFile.Api.Business.Controllers
         [HttpGet("{beneficiaryId}")]
         [ProducesResponseType(typeof(BeneficiaryModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBeneficiaryAsync(int beneficiaryId)
         {
-            var response = await _mediator.Send(new GetBeneficiary(beneficiaryId));
+            var response = await _mediator.Send(new GetBeneficiary(beneficiaryId, UserId));
             if (response.IsSuccess)
             {
                 return Ok(response.Value);
@@ -162,9 +160,6 @@ namespace CaseFile.Api.Business.Controllers
         [Route("sendFile")]
         public async Task<IActionResult> SendFile(int beneficiaryId)
         {
-            // check that the logged in user is allowed to send the file -> the user is the beneficiary's assistent
-            // or a member of the ngo where the beneficiary is registered
-
             if (beneficiaryId <= 0)
                 return BadRequest("Invalid beneficiary.");
 
@@ -175,71 +170,6 @@ namespace CaseFile.Api.Business.Controllers
 
             return Ok(result.IsSuccess);
         }
-
-        //[HttpPost]
-        //[Route("reset")]
-        //[Authorize("NgoAdmin")]
-        //public async Task<IActionResult> Reset([FromBody]ResetModel model)
-        //{
-        //    if (string.IsNullOrEmpty(model.Action) || string.IsNullOrEmpty(model.PhoneNumber))
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    if (string.Equals(model.Action, ControllerExtensions.DEVICE_RESET))
-        //    {
-        //        var result = await _mediator.Send(new ResetDeviceCommand
-        //        {
-        //            NgoId = NgoId,
-        //            PhoneNumber = model.PhoneNumber,
-        //            //Organizer = this.GetOrganizatorOrDefault(false)
-        //        });
-        //        if (result == -1)
-        //        {
-        //            return NotFound(ControllerExtensions.RESET_ERROR_MESSAGE + model.PhoneNumber);
-        //        }
-        //        else
-        //        {
-        //            return Ok(result);
-        //        }
-        //    }
-
-        //    if (string.Equals(model.Action, ControllerExtensions.PASSWORD_RESET))
-        //    {
-        //        var result = await _mediator.Send(new ResetPasswordCommand
-        //        {
-        //            NgoId = NgoId,
-        //            PhoneNumber = model.PhoneNumber,
-        //            Pin = model.Pin,
-        //            //Organizer = this.GetOrganizatorOrDefault(false)
-        //        });
-        //        if (result == false)
-        //        {
-        //            return NotFound(ControllerExtensions.RESET_ERROR_MESSAGE + model.PhoneNumber);
-        //        }
-
-        //        return Ok();
-        //    }
-
-        //    return UnprocessableEntity();
-        //}
-
-        //[HttpPost]
-        //[Route("generate")]
-        //[Produces(type: typeof(List<GeneratedObserver>))]
-        //public async Task<IActionResult> GenerateObservers([FromForm] int count)
-        //{
-        //    if (!ControllerExtensions.ValidateGenerateObserversNumber(count))
-        //    {
-        //        return BadRequest("Incorrect parameter supplied, please check that paramter is between boundaries: "
-        //            + ControllerExtensions.LOWER_OBS_VALUE + " - " + ControllerExtensions.UPPER_OBS_VALUE);
-        //    }
-
-        //    var command = new ObserverGenerateCommand(count, NgoId);
-
-        //    var result = await _mediator.Send(command);
-
-        //    return Ok(result);
-        //}
+        
     }
 }

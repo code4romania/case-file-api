@@ -8,10 +8,8 @@ namespace CaseFile.Api.Form.Models
     {
         public int Id { get; set; }
         //public string Code { get; set; }
-        //public int CurrentVersion { get; set; }
         public string Description { get; set; }
-        public List<FormSectionDTO> FormSections { get; set; }        
-        //public int Order { get; set; }
+        public List<FormSectionDTO> FormSections { get; set; }
         public FormType Type { get; set; }
     }
 

@@ -9,7 +9,6 @@ using CaseFile.Api.Form.Models;
 using CaseFile.Api.Form.Queries;
 using CaseFile.Api.Core;
 using AutoMapper;
-using Microsoft.AspNetCore.Cors;
 
 namespace CaseFile.Api.Form.Controllers
 {
@@ -25,7 +24,7 @@ namespace CaseFile.Api.Form.Controllers
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
 
-        private int UserId => this.GetIdObserver();        
+        private int UserId => this.GetCurrentUserId();        
 
         public FormController(IMediator mediator, IMapper mapper, IOptions<ApplicationCacheOptions> cacheOptions)
         {
@@ -34,34 +33,20 @@ namespace CaseFile.Api.Form.Controllers
             _mapper = mapper;
         }
 
-        //[EnableCors("_myAllowSpecificOrigins")]
         [HttpPost]
         [Produces(type: typeof(int))]
         public async Task<IActionResult> AddForm([FromBody]FormDTO newForm)
         {
-            FormDTO result = await _mediator.Send(new AddFormQuery { Form = newForm, UserId = this.GetIdObserver() });
+            FormDTO result = await _mediator.Send(new AddFormQuery { Form = newForm, UserId = this.GetCurrentUserId() });
             return Ok(result.Id);
         }
-        /// <summary>
-        /// Returneaza versiunea tuturor formularelor sub forma unui array. 
-        /// Daca versiunea returnata difera de cea din aplicatie, atunci trebuie incarcat formularul din nou 
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("versions")]
-        [Produces(typeof(Dictionary<string, int>))]
-        public async Task<IActionResult> GetFormVersions()
-        {
-            var formsAsDict = new Dictionary<string, int>();
-            (await _mediator.Send(new FormVersionQuery(null))).ForEach(form => formsAsDict.Add(form.Code, form.CurrentVersion));
-
-            return Ok(new { Versions = formsAsDict });
-        }
-
+        
         /// <summary>
         /// Returns an array of forms
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [Produces(type: typeof(FormVersionsModel))]
         public async Task<IActionResult> GetFormsAsync()
             => Ok(new FormVersionsModel { FormVersions = await _mediator.Send(new FormVersionQuery(UserId)) });
 
@@ -77,13 +62,14 @@ namespace CaseFile.Api.Form.Controllers
         }
 
         /// <summary>
-        /// Se interogheaza ultima versiunea a formularului pentru observatori si se primeste definitia lui. 
+        /// Se interogheaza ultima versiunea a formularului pentru users si se primeste definitia lui. 
         /// In definitia unui formular nu intra intrebarile standard (ora sosirii, etc). 
         /// Acestea se considera implicite pe fiecare formular.
         /// </summary>
         /// <param name="formId">SectionId-ul formularului pentru care trebuie preluata definitia</param>
         /// <returns></returns>
         [HttpGet("{formId}")]
+        [Produces(type: typeof(IEnumerable<FormSectionDTO>))]
         public async Task<IEnumerable<FormSectionDTO>> GetFormAsync(int formId)
         {
             var result = await _mediator.Send(new FormQuestionQuery
@@ -96,6 +82,22 @@ namespace CaseFile.Api.Form.Controllers
             });
 
             return result;
+        }
+
+        [HttpDelete]
+        [Produces(type: typeof(bool))]
+        public async Task<IActionResult> DeleteForm(int formId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var command = _mapper.Map<DeleteFormCommand>(new DeleteFormModel { FormId = formId });
+            command.UserId = UserId;
+            var result = await _mediator.Send(command);
+
+            return Ok(result);
         }
     }
 }

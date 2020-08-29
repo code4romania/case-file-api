@@ -14,7 +14,8 @@ using CaseFile.Entities;
 namespace CaseFile.Api.Form.Queries
 {
     public class FormQueryHandler :
-        IRequestHandler<FormQuestionQuery, IEnumerable<FormSectionDTO>>
+        IRequestHandler<FormQuestionQuery, IEnumerable<FormSectionDTO>>,
+        IRequestHandler<DeleteFormCommand, bool>
     {
         private readonly CaseFileContext _context;
         private readonly IMapper _mapper;
@@ -63,12 +64,10 @@ namespace CaseFile.Api.Form.Queries
 
                     var result = sectiuni.OrderBy(s => s.CodSectiune).Select(i => new FormSectionDTO
                     {
-                        //UniqueId = form.Code + i.CodSectiune + i.IdSectiune,
                         SectionId = i.IdSectiune,
                         Title = i.CodSectiune,
                         Description = i.Descriere,
                         Questions = r.Where(a => a.SectionId == i.IdSectiune)
-                                     //.OrderBy(intrebare => intrebare.Code)
                                      .OrderBy(intrebare => intrebare.QuestionId)
                                      .Select(a => _mapper.Map<QuestionDTO>(a)).ToList()
                     }).ToList();
@@ -78,6 +77,25 @@ namespace CaseFile.Api.Form.Queries
                 {
                     AbsoluteExpirationRelativeToNow = new TimeSpan(message.CacheHours, message.CacheMinutes, message.CacheMinutes)
                 });
+        }
+
+        public async Task<bool> Handle(DeleteFormCommand request, CancellationToken cancellationToken)
+        {
+            // check if the current / logged in user has the right to perform this action
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId);
+            if (currentUser.Role != Role.Admin && currentUser.Role != Role.NgoAdmin)
+                return false;
+
+            var form = await _context.Forms.Include(f => f.CreatedByUser).FirstOrDefaultAsync(f => f.FormId == request.FormId);
+            if (form == null || _context.UserForms.Any(f => f.FormId == form.FormId) || form.CreatedByUser.NgoId != currentUser.NgoId) // forms assigned to beneficiaries cannot be deleted
+            {
+                return false;
+            }
+
+            _context.Forms.Remove(form);
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

@@ -148,10 +148,8 @@ namespace CaseFile.Api.Business.Handlers
             }
             catch (System.Exception e)
             {
-                //_logger.LogError(e.StackTrace);
                 _logger.LogError($"Unable to load user {request.UserId}", e);
                 return Result.Failure<UserModel>($"Unable to load user {request.UserId}");
-                //return Result.Failure<BeneficiaryModel>(e.Message);
             }
         }
 

@@ -61,9 +61,7 @@ namespace CaseFile.Api.Form.Queries
 		}
 
         public async Task<ApiListResponse<FormDetailsModel>> Handle(FormListCommand request, CancellationToken cancellationToken)
-        {
-            //_logger.LogInformation($"Searching for Users with the following filters (NgoId, Name): {request.NgoId}, {request.Name}");
-
+        {            
             var ngoId = _context.Users.FirstOrDefault(u => u.UserId == request.UserId).NgoId;
             IQueryable<Entities.Form> result = _context.Forms.Include(f => f.CreatedByUser)
                 .AsNoTracking()

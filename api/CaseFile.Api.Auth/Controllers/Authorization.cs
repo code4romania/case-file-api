@@ -109,6 +109,9 @@ namespace CaseFile.Api.Auth.Controllers
         }
 
         [HttpPost("verify")]
+        [ProducesResponseType(typeof(TokenVerificationResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Verify([FromBody]TokenVerificationModel tokenVerification)
         {
             if (ModelState.IsValid)
@@ -139,6 +142,9 @@ namespace CaseFile.Api.Auth.Controllers
         }
 
         [HttpPost("resend")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> ResendPhoneVerificationRequest()
         {            
             var userId = User.Claims.First(c => c.Type == ClaimsHelper.UserIdProperty).Value;
@@ -161,15 +167,33 @@ namespace CaseFile.Api.Auth.Controllers
         }
 
         [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult ForgotPassword([FromBody]ForgotPasswordRequest model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
             _accountService.ForgotPassword(model, Request.Headers["origin"]);
             return Ok(new { message = "Va rugam sa va verificati email-ul pentru instructiunile de resetare a parolei" });
         }
 
         [HttpPost("reset-password")]
-        public IActionResult ResetPassword(ResetPasswordRequest model)
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public IActionResult ResetPassword([FromBody]ResetPasswordRequest model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
             _accountService.ResetPassword(model);
             return Ok(new { message = "Parola a fost schimbata cu succes, puteti folosi aplicatia." });
         }
@@ -178,18 +202,18 @@ namespace CaseFile.Api.Auth.Controllers
         /// Test action to get claims
         /// </summary>
         /// <returns></returns>
-        [Authorize]
-        [HttpPost("test")]
-        public async Task<object> Test()
-        {
-            var claims = User.Claims.Select(c => new
-            {
-                c.Type,
-                c.Value
-            });
+        //[Authorize]
+        //[HttpPost("test")]
+        //public async Task<object> Test()
+        //{
+        //    var claims = User.Claims.Select(c => new
+        //    {
+        //        c.Type,
+        //        c.Value
+        //    });
 
-            return await Task.FromResult(claims);
-        }
+        //    return await Task.FromResult(claims);
+        //}
         private static void ThrowIfInvalidOptions(JwtIssuerOptions options)
         {
             if (options == null)

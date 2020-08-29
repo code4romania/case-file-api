@@ -51,7 +51,7 @@ namespace CaseFile.Api.Answer.Handlers
                     {
                         var intrebari = message.Answers.Select(a => a.QuestionId).Distinct().ToList();
 
-                        // delete existing answers for posted questions on this 'sectie'
+                        // delete existing answers for posted questions on this beneficiary
                         var todelete = _context.Answers
                                 .Include(a => a.OptionAnswered)
                                 .Where(
@@ -60,8 +60,7 @@ namespace CaseFile.Api.Answer.Handlers
                                         && a.BeneficiaryId == beneficiaryId)
                                 .Where(a => intrebari.Contains(a.OptionAnswered.QuestionId))
                                 .WhereRaspunsContains(intrebari)
-                            ;
-                        //.Delete();
+                            ;                        
                         _context.Answers.RemoveRange(todelete);
 
                         await _context.SaveChangesAsync();
@@ -95,8 +94,6 @@ namespace CaseFile.Api.Answer.Handlers
                     BeneficiaryId = a.BeneficiaryId,
                     OptionToQuestionId = o.OptionId,
                     Value = o.Value,
-                    //CountyCode = a.CountyCode,
-                    //PollingStationNumber = a.PollingStationNumber,
                     LastModified = lastModified
                 })
             })
@@ -108,8 +105,6 @@ namespace CaseFile.Api.Answer.Handlers
                         BeneficiaryId = o.Last().BeneficiaryId,
                         OptionToQuestionId = g,
                         Value = o.Last().Value,
-                        //CountyCode = o.Last().CountyCode,
-                        //PollingStationNumber = o.Last().PollingStationNumber,
                         LastModified = lastModified
                     })
                 .Distinct()

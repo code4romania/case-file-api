@@ -24,6 +24,7 @@ namespace CaseFile.Api.Core.Extensions
             services.Configure<DefaultNgoOptions>(configuration.GetSection(nameof(DefaultNgoOptions)));
             services.Configure<DefaultNgoOptions>(configuration.GetSection(nameof(ApplicationCacheOptions)));
             services.Configure<PollingStationsOptions>(configuration.GetSection(nameof(PollingStationsOptions)));
+            services.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
             return services;
         }
 

@@ -10,7 +10,7 @@
         <member name="M:CaseFile.Api.Auth.Controllers.Authorization.#ctor(Microsoft.Extensions.Options.IOptions{CaseFile.Api.Core.Models.JwtIssuerOptions},Microsoft.Extensions.Logging.ILogger{CaseFile.Api.Auth.Controllers.Authorization},MediatR.IMediator,Microsoft.Extensions.Options.IOptions{CaseFile.Api.Core.Options.MobileSecurityOptions},CaseFile.Api.Auth.Services.IAuthy,CaseFile.Api.Auth.Services.IAccountService)">
             <inheritdoc />
         </member>
-        <member name="M:CaseFile.Api.Auth.Controllers.Authorization.Test">
+        <member name="M:CaseFile.Api.Auth.Controllers.Authorization.ThrowIfInvalidOptions(CaseFile.Api.Core.Models.JwtIssuerOptions)">
             <summary>
             Test action to get claims
             </summary>

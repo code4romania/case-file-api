@@ -22,29 +22,11 @@ namespace CaseFile.Api.Core
                 : defaultIdOng;
         }
 
-        public static int GetIdObserver(this Controller controller)
+        public static int GetCurrentUserId(this Controller controller)
         {
             return int.Parse(controller.User.Claims.First(c => c.Type == ClaimsHelper.UserIdProperty).Value);
         }
 
-        //public static int GetIdObserverOrDefault(this Controller controller, int defaultUserId)
-        //{
-        //    return int.TryParse(controller.User.Claims.First(c => c.Type == ClaimsHelper.UserIdProperty)?.Value, out var result)
-        //        ? result
-        //        : defaultUserId;
-        //}
-
-        //public static bool GetOrganizatorOrDefault(this Controller controller, bool defaultOrganizator)
-        //{
-        //    return bool.TryParse(controller.User.Claims.FirstOrDefault(a => a.Type == ClaimsHelper.Organizer)?.Value, out var result)
-        //        ? result
-        //        : defaultOrganizator;
-        //}
-
-        public static bool ValidateGenerateObserversNumber(int number)
-        {
-            return (number > LOWER_OBS_VALUE) && (number < UPPER_OBS_VALUE);
-        }
         public static IAsyncResult ResultAsync(this Controller controller, HttpStatusCode statusCode, ModelStateDictionary modelState = null)
         {
             controller.Response.StatusCode = (int)statusCode;

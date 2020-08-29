@@ -6,11 +6,13 @@ namespace CaseFile.Api.Business.Queries
 {
     public class GetBeneficiary : IRequest<Result<BeneficiaryModel>>
     {
-        public GetBeneficiary(int beneficiaryId)
+        public GetBeneficiary(int beneficiaryId, int userId)
         {
             BeneficiaryId = beneficiaryId;
+            UserId = userId;
         }
 
         public int BeneficiaryId { get; }
+        public int UserId { get; }
     }
 }

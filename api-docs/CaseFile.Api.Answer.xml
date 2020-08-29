@@ -12,7 +12,7 @@
         <member name="M:CaseFile.Api.Answer.Controllers.AnswersController.PostAnswer(CaseFile.Api.Answer.Models.AnswerModelWrapper)">
             <summary>
             Saves the answers to one or more questions, for a form for a beneficiary.
-            An answer can have multiple options (OptionId) and potentially a free text (Value).
+            An answer can have multiple options (OptionId) or a free text (Value).
             </summary>
             <param name="answerModel">Beneficiary, list of options and the associated text of an option when
             <code>IsFreeText = true</code></param>
