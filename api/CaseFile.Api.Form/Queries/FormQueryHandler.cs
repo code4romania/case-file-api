@@ -16,6 +16,7 @@ namespace CaseFile.Api.Form.Queries
     public class FormQueryHandler :
         IRequestHandler<FormQuestionQuery, IEnumerable<FormSectionDTO>>,
         IRequestHandler<DeleteFormCommand, bool>
+        //IRequestHandler<PublishFormCommand, bool>
     {
         private readonly CaseFileContext _context;
         private readonly IMapper _mapper;
@@ -81,21 +82,46 @@ namespace CaseFile.Api.Form.Queries
 
         public async Task<bool> Handle(DeleteFormCommand request, CancellationToken cancellationToken)
         {
-            // check if the current / logged in user has the right to perform this action
-            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId);
-            if (currentUser.Role != Role.Admin && currentUser.Role != Role.NgoAdmin)
-                return false;
-
+            // the current / logged in user has the right to delete only the forms templates he /she created
             var form = await _context.Forms.Include(f => f.CreatedByUser).FirstOrDefaultAsync(f => f.FormId == request.FormId);
-            if (form == null || _context.UserForms.Any(f => f.FormId == form.FormId) || form.CreatedByUser.NgoId != currentUser.NgoId) // forms assigned to beneficiaries cannot be deleted
+            if (form == null || _context.UserForms.Any(f => f.FormId == form.FormId) || form.CreatedByUserId != request.UserId) // forms assigned to beneficiaries cannot be deleted
             {
                 return false;
             }
 
+            var sections = _context.FormSections.Where(s => s.FormId == form.FormId);
+            var sectionsIds = sections.Select(s => s.FormSectionId);
+            var questions = _context.Questions.Where(q => sectionsIds.Contains(q.SectionId));
+            var questionsIds = questions.Select(q => q.QuestionId);
+            var optionsToQuestions = _context.OptionsToQuestions.Where(o => questionsIds.Contains(o.QuestionId));
+            var optionsIds = optionsToQuestions.Select(o => o.OptionId);
+            var options = _context.Options.Where(o => optionsIds.Contains(o.OptionId));
+            
+            _context.OptionsToQuestions.RemoveRange(optionsToQuestions);
+            _context.Options.RemoveRange(options);
+            _context.Questions.RemoveRange(questions);
+            _context.FormSections.RemoveRange(sections);
             _context.Forms.Remove(form);
 
             await _context.SaveChangesAsync();
             return true;
         }
+
+        //public async Task<bool> Handle(PublishFormCommand request, CancellationToken cancellationToken)
+        //{
+        //    var form = await _context.Forms.Include(f => f.CreatedByUser).FirstOrDefaultAsync(f => f.FormId == request.FormId);
+        //    if (form == null || form.CreatedByUserId != request.UserId) // check if the current / logged in user has the right to perform this action
+        //    {
+        //        return false;
+        //    }
+
+        //    if (form.Draft)
+        //        form.Draft = false;
+        //    if (form.Type == FormType.Private)
+        //        form.Type = FormType.Public;
+
+        //    await _context.SaveChangesAsync();
+        //    return true;
+        //}
     }
 }

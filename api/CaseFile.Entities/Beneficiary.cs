@@ -11,15 +11,9 @@ namespace CaseFile.Entities
         NotMarried,
         Married,
         Divorced,
-        Widowed
+        Widowed,
+        Partner
     }
-
-    //public enum FamilyRole
-    //{
-    //    Child,
-    //    Partner,
-    //    Parent
-    //}
 
     public enum Gender
     {

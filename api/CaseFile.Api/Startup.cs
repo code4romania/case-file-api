@@ -36,7 +36,7 @@ namespace CaseFile.Api
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                                   builder =>
                                   {
-                                      builder.WithOrigins("http://localhost:4200", "https://app-casefile-frontend-test.azurewebsites.net")
+                                      builder.WithOrigins("http://localhost:4200", "https://app-casefile-frontend-test.azurewebsites.net", "https://app-casefile-frontend-prod.azurewebsites.net")
                                             .AllowAnyMethod()
                                             .AllowAnyHeader()
                                             .AllowCredentials();

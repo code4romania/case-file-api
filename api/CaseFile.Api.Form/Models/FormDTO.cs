@@ -7,10 +7,10 @@ namespace CaseFile.Api.Form.Models
     public class FormDTO
     {
         public int Id { get; set; }
-        //public string Code { get; set; }
         public string Description { get; set; }
         public List<FormSectionDTO> FormSections { get; set; }
         public FormType Type { get; set; }
+        public bool Draft { get; set; }
     }
 
     public class FormProfile : Profile
@@ -19,7 +19,7 @@ namespace CaseFile.Api.Form.Models
         {
             CreateMap<FormDTO, Entities.Form>()
                 .ForMember(dest => dest.FormSections, c => c.MapFrom(src => src.FormSections))
-                .ForMember(dest => dest.Draft, c => c.MapFrom(src => false));
+                .ForMember(dest => dest.Draft, c => c.MapFrom(src => src.Draft));
 
             CreateMap<FormSectionDTO, FormSection>()
                 .ForMember(dest => dest.Questions,

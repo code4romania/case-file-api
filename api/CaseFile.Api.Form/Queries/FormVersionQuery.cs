@@ -30,7 +30,7 @@ namespace CaseFile.Api.Form.Queries
         public int? UserId { get; set; }
     }
 
-    public class FormListCommand : IRequest<ApiListResponse<FormDetailsModel>>
+    public class FormListCommand : IRequest<ApiListResponse<FormResultModel>>
     {
         public int UserId { get; set; }
         public string Description { get; set; }
@@ -49,6 +49,17 @@ namespace CaseFile.Api.Form.Queries
         public int UserId { get; set; }
     }
 
+    public class PublishFormModel
+    {
+        public int FormId { get; set; }
+    }
+
+    public class PublishFormCommand : IRequest<bool>
+    {
+        public int FormId { get; set; }
+        public int UserId { get; set; }
+    }
+
     public class FormListCommandProfile : Profile
     {
         public FormListCommandProfile()
@@ -57,6 +68,10 @@ namespace CaseFile.Api.Form.Queries
                 .ForMember(dest => dest.Description, c => c.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Page, c => c.MapFrom(src => src.Page))
                 .ForMember(dest => dest.PageSize, c => c.MapFrom(src => src.PageSize))
+               ;
+
+            CreateMap<DeleteFormModel, DeleteFormCommand>()
+                .ForMember(dest => dest.FormId, c => c.MapFrom(src => src.FormId))
                ;
         }
     }

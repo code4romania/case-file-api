@@ -5,10 +5,13 @@
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <ApplicationInsightsResourceId>/subscriptions/8ad78fbb-bdc8-408b-ac97-bab673b57011/resourcegroups/rg-mv-ngo-dev/providers/microsoft.insights/components/mv-mobile-dev</ApplicationInsightsResourceId>
     <Nullable>annotations</Nullable>
+    <UserSecretsId>901e3972-c66e-40b8-bfc5-37c162ff87e3</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="CaseFile.Api.csproj.user" />
+    <None Include="Properties\PublishProfiles\app-casefile-api-prod - Web Deploy.pubxml.user" />
+    <None Include="Properties\PublishProfiles\app-casefile-api-test - Web Deploy.pubxml.user" />
   </ItemGroup>
 
   <ItemGroup>

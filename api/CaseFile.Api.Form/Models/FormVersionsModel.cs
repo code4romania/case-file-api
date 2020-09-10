@@ -29,4 +29,11 @@ namespace CaseFile.Api.Form.Models
         [JsonProperty(PropertyName = "user")]
         public string UserName { get; set; }
     }
+
+    public class FormResultModel : FormDetailsModel
+    {
+        [JsonProperty(PropertyName = "canBeModified")]
+        public bool CanBeModified { get; set; }
+    }
+
 }

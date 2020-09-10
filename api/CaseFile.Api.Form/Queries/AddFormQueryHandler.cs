@@ -35,7 +35,7 @@ namespace CaseFile.Api.Form.Queries
                     CurrentVersion = 1,
                     Description = message.Form.Description,
                     FormSections = new List<FormSection>(),
-                    Draft = false,
+                    Draft = message.Form.Draft,
                     Order = 0,
                     Type = message.Form.Type,
                     CreatedByUserId = message.UserId,

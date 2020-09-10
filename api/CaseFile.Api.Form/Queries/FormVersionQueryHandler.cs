@@ -12,7 +12,7 @@ namespace CaseFile.Api.Form.Queries
 {
 
     public class FormVersionQueryHandler : IRequestHandler<FormVersionQuery, List<FormDetailsModel>>,
-        IRequestHandler<FormListCommand, ApiListResponse<FormDetailsModel>>
+        IRequestHandler<FormListCommand, ApiListResponse<FormResultModel>>
     {
         private readonly CaseFileContext _context;
 
@@ -22,9 +22,7 @@ namespace CaseFile.Api.Form.Queries
         }
 
 		public async Task<List<FormDetailsModel>> Handle(FormVersionQuery request, CancellationToken cancellationToken)
-		{
-            // todo: check that the request.UserId is the logged in user 
-
+		{            
             List<Entities.Form> result;
 
             if (request.UserId == null)
@@ -46,7 +44,7 @@ namespace CaseFile.Api.Form.Queries
             }
 
 			var sortedForms = result
-					.OrderBy(x=>x.Order)
+					.OrderByDescending(x=>x.Date)
                     .Select(x=>new FormDetailsModel() { 
                        Id = x.FormId,
                        Description = x.Description,
@@ -60,13 +58,13 @@ namespace CaseFile.Api.Form.Queries
 			return sortedForms;
 		}
 
-        public async Task<ApiListResponse<FormDetailsModel>> Handle(FormListCommand request, CancellationToken cancellationToken)
+        public async Task<ApiListResponse<FormResultModel>> Handle(FormListCommand request, CancellationToken cancellationToken)
         {            
             var ngoId = _context.Users.FirstOrDefault(u => u.UserId == request.UserId).NgoId;
             IQueryable<Entities.Form> result = _context.Forms.Include(f => f.CreatedByUser)
                 .AsNoTracking()
                 .Where(x => x.Type == FormType.Public || (x.Type == FormType.Private && x.CreatedByUser.NgoId == ngoId))
-                .Where(x => x.Draft == false);
+                .Where(x => x.Draft == false || (x.Draft == true && x.CreatedByUserId == request.UserId));
 
             if (!string.IsNullOrEmpty(request.Description))
             {
@@ -75,20 +73,21 @@ namespace CaseFile.Api.Form.Queries
 
             var count = await result.CountAsync(cancellationToken);
 
-            var requestedPageForms = GetPagedQuery(result.OrderBy(r => r.Description), request.Page, request.PageSize)
+            var requestedPageForms = GetPagedQuery(result.OrderByDescending(r => r.Date), request.Page, request.PageSize)
                 .ToList()
-                .Select(x => new FormDetailsModel()
+                .Select(x => new FormResultModel()
                 {
                     Id = x.FormId,
                     Description = x.Description,
                     Code = x.Code,
                     CurrentVersion = x.CurrentVersion,
                     UserName = x.CreatedByUser.Name,
-                    Date = x.Date.ToString("dd.MM.yyyy")
+                    Date = x.Date.ToString("dd.MM.yyyy"),
+                    CanBeModified = !_context.UserForms.Any(f => f.FormId == x.FormId) && x.CreatedByUserId == request.UserId
                 });
 
 
-            return new ApiListResponse<FormDetailsModel>
+            return new ApiListResponse<FormResultModel>
             {
                 TotalItems = count,
                 Data = requestedPageForms.ToList(),

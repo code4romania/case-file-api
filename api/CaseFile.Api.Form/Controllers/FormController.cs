@@ -9,6 +9,7 @@ using CaseFile.Api.Form.Models;
 using CaseFile.Api.Form.Queries;
 using CaseFile.Api.Core;
 using AutoMapper;
+using CaseFile.Entities;
 
 namespace CaseFile.Api.Form.Controllers
 {
@@ -37,6 +38,7 @@ namespace CaseFile.Api.Form.Controllers
         [Produces(type: typeof(int))]
         public async Task<IActionResult> AddForm([FromBody]FormDTO newForm)
         {
+            newForm.Draft = true;
             FormDTO result = await _mediator.Send(new AddFormQuery { Form = newForm, UserId = this.GetCurrentUserId() });
             return Ok(result.Id);
         }
@@ -51,8 +53,8 @@ namespace CaseFile.Api.Form.Controllers
             => Ok(new FormVersionsModel { FormVersions = await _mediator.Send(new FormVersionQuery(UserId)) });
 
         [HttpGet("search")]
-        [Produces(type: typeof(ApiListResponse<FormDetailsModel>))]
-        public async Task<ApiListResponse<FormDetailsModel>> GetForms(FormListQuery query)
+        [Produces(type: typeof(ApiListResponse<FormResultModel>))]
+        public async Task<ApiListResponse<FormResultModel>> GetForms(FormListQuery query)
         {
             var command = _mapper.Map<FormListCommand>(query);
             command.UserId = UserId;
@@ -98,6 +100,23 @@ namespace CaseFile.Api.Form.Controllers
             var result = await _mediator.Send(command);
 
             return Ok(result);
+        }
+
+        [HttpPost("publish")]
+        [Produces(type: typeof(int))]
+        public async Task<IActionResult> PublishForm([FromBody]FormDTO newForm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            newForm.Draft = false;
+            if (newForm.Type == FormType.Private)
+                newForm.Type = FormType.Public;
+
+            FormDTO result = await _mediator.Send(new AddFormQuery { Form = newForm, UserId = this.GetCurrentUserId() });
+            return Ok(result.Id);
         }
     }
 }

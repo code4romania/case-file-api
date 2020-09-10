@@ -17,6 +17,15 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Kernel.Geom;
+using iText.Layout.Element;
+using CaseFile.Api.Answer.Queries;
+using CaseFile.Api.Answer.Models;
+using AutoMapper;
+using Microsoft.AspNetCore.WebUtilities;
+using iText.Kernel.Colors;
 
 namespace CaseFile.Api.Business.Handlers
 {
@@ -30,12 +39,14 @@ namespace CaseFile.Api.Business.Handlers
         private readonly CaseFileContext _context;
         private readonly ILogger _logger;
         private readonly IEmailService _emailService;
+        private readonly IMapper _mapper;
 
-        public BeneficiaryRequestsHandler(CaseFileContext context, ILogger<UserRequestsHandler> logger, IEmailService emailService)
+        public BeneficiaryRequestsHandler(CaseFileContext context, ILogger<UserRequestsHandler> logger, IEmailService emailService, IMapper mapper)
         {
             _context = context;
             _logger = logger;
             _emailService = emailService;
+            _mapper = mapper;
         }
 
         public async Task<int> Handle(NewBeneficiaryCommand message, CancellationToken token)
@@ -311,40 +322,148 @@ namespace CaseFile.Api.Business.Handlers
                 // or a member of the ngo where the beneficiary is registered
                 var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId);
 
-                var beneficiary = await _context.Beneficiaries.Include(b => b.User).FirstOrDefaultAsync(b => b.BeneficiaryId == request.BeneficiaryId);
+                var beneficiary = await _context.Beneficiaries.Include(b => b.User).Include(b => b.County).Include(b => b.City).FirstOrDefaultAsync(b => b.BeneficiaryId == request.BeneficiaryId);
                 if (beneficiary == null || (currentUser.NgoId != beneficiary.User.NgoId))
                 {
                     return Result.Failure<bool>($"Could not find beneficiary with id = {request.BeneficiaryId}");
                 }
 
-                var beneficiaryForms = _context.UserForms.Where(f => f.BeneficiaryId == beneficiary.BeneficiaryId).ToList();
+                var beneficiaryForms = _context.UserForms.Include(f => f.Form).ThenInclude(f => f.FormSections).ThenInclude(s => s.Questions).Where(f => f.BeneficiaryId == beneficiary.BeneficiaryId).ToList();
 
-                foreach (var form in beneficiaryForms)
+                byte[] result;
+
+                using (var memoryStream = new MemoryStream())
                 {
-                    var hasQuestionsAnswered = _context.Answers.Include(a => a.OptionAnswered).ThenInclude(o => o.Question).ThenInclude(q => q.FormSection)
-                                                    .Any(a => a.BeneficiaryId == beneficiary.BeneficiaryId
-                                                    && a.OptionAnswered.Question.FormSection.FormId == form.FormId);
-                    if (hasQuestionsAnswered)
-                    {
-                        // todo: add to pdf
+                    var pdfWriter = new PdfWriter(memoryStream);
+                    var pdfDocument = new PdfDocument(pdfWriter);
+                    var document = new Document(pdfDocument, PageSize.LETTER, true);
+
+                    document.Add(new Paragraph("Date beneficiar").SetFontSize(15).SetBold());
+
+                    var detailsParagraph = new Paragraph();
+
+                    detailsParagraph.Add(beneficiary.Name).SetFontSize(12).SetBold();
+                    detailsParagraph.Add(Environment.NewLine);
+                    detailsParagraph.Add(beneficiary.BirthDate.ToString("dd.MM.yyyy"));
+                    detailsParagraph.Add(Environment.NewLine);
+                    if (beneficiary.CountyId != null)
+                    {                        
+                        detailsParagraph.Add(beneficiary.County.Name);
+                        detailsParagraph.Add(Environment.NewLine);
                     }
+                    if (beneficiary.CityId != null)
+                    {
+                        detailsParagraph.Add(beneficiary.City.Name);
+                        detailsParagraph.Add(Environment.NewLine);
+                    }
+
+                    var civilStatus = string.Empty;
+                    if (beneficiary.CivilStatus == CivilStatus.NotMarried)
+                        civilStatus = "necasatorit / a";
+                    else if (beneficiary.CivilStatus == CivilStatus.Married)
+                        civilStatus = "casatorit / a";
+                    else if (beneficiary.CivilStatus == CivilStatus.Divorced)
+                        civilStatus = "divortat / a";
+                    else if (beneficiary.CivilStatus == CivilStatus.Widowed)
+                        civilStatus = "vaduv / a";
+                    else if (beneficiary.CivilStatus == CivilStatus.Partner)
+                        civilStatus = "concubinaj";
+
+                    detailsParagraph.Add(civilStatus);
+                    detailsParagraph.Add(Environment.NewLine);
+                    detailsParagraph.Add(Environment.NewLine);
+
+                    document.Add(detailsParagraph);
+
+                    if (!beneficiaryForms.Any())
+                    {
+                        document.Add(new Paragraph("Nu exista formulare completate pentru acest beneficiar.").SetFontSize(12).SetBold());
+                    }
+                    else
+                    {
+                        foreach (var form in beneficiaryForms)
+                        {
+                            var hasQuestionsAnswered = _context.Answers.Include(a => a.OptionAnswered).ThenInclude(o => o.Question).ThenInclude(q => q.FormSection)
+                                                            .Any(a => a.BeneficiaryId == beneficiary.BeneficiaryId
+                                                            && a.OptionAnswered.Question.FormSection.FormId == form.FormId);
+                            if (hasQuestionsAnswered)
+                            {
+                                var answers = await _context.Answers
+                                    .Include(r => r.OptionAnswered)
+                                        .ThenInclude(rd => rd.Question)
+                                        .ThenInclude(q => q.FormSection)
+                                    .Include(r => r.OptionAnswered)
+                                        .ThenInclude(rd => rd.Option)
+                                    .Where(r => r.UserId == currentUser.UserId && r.BeneficiaryId == beneficiary.BeneficiaryId && r.OptionAnswered.Question.FormSection.FormId == form.FormId)
+                                    .ToListAsync(cancellationToken: cancellationToken);
+
+                                var intrebari = answers
+                                    .Select(r => r.OptionAnswered.Question)
+                                    .ToList();
+
+                                var formAnswers = intrebari.Select(i => _mapper.Map<QuestionDTO<FilledInAnswerDTO>>(i)).ToList();
+
+                                document.Add(new Paragraph("Formular: " + form.Form.Description).SetFontSize(15).SetBold());
+
+                                foreach (var section in form.Form.FormSections)
+                                {
+                                    document.Add(new Paragraph(section.Description).SetFontSize(12).SetBold());
+
+                                    if (section.Questions.Any())
+                                    {
+                                        foreach (var question in section.Questions)
+                                        {
+                                            var questionParagraph = new Paragraph();
+                                            questionParagraph.Add(question.Text);
+                                            questionParagraph.Add(Environment.NewLine);
+
+                                            if (formAnswers.Any(a => a.QuestionId == question.QuestionId))
+                                            {
+                                                var qAnswers = formAnswers.FirstOrDefault(a => a.QuestionId == question.QuestionId);
+                                                foreach (var answer in qAnswers.Answers)
+                                                {
+                                                    if (question.QuestionType == QuestionType.Date || question.QuestionType == QuestionType.Number || question.QuestionType == QuestionType.Text)
+                                                    {
+                                                        if (question.QuestionType == QuestionType.Date && !string.IsNullOrEmpty(answer.Value))
+                                                        {
+                                                            DateTime date;
+                                                            var isDate = DateTime.TryParse(answer.Value, out date);
+                                                            questionParagraph.Add(isDate ? date.ToString("dd.MM.yyyy") : " - ");
+                                                        }
+                                                        else
+                                                        {
+                                                            questionParagraph.Add(!string.IsNullOrEmpty(answer.Value) ? answer.Value : " - ");
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        questionParagraph.Add(answer.Text);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                questionParagraph.Add(" - ");
+                                                questionParagraph.Add(Environment.NewLine);
+                                            }
+
+                                            document.Add(questionParagraph);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    document.Close();
+
+                    result = memoryStream.ToArray();
                 }
 
                 // send mail with beneficiary info pdf
                 var body = "Regasiti atasat formularele completate pentru beneficiarul " + beneficiary.Name;
 
-                await _emailService.Send(currentUser.Email, "Fisa beneficiar", body);
-                                
-                // TODO! send message with attachement
-                //byte[] byteData = File.ReadAllBytes(@"C:\work\CaseFile\src\api\CaseFile.Api.Observer\Files\Test_beneficiary_info.pdf");
-                //message.AddAttachment(
-                //            new Attachment
-                //            {
-                //                Content = Convert.ToBase64String(byteData),
-                //                Filename = "FisaBeneficiar.pdf",
-                //                Type = "application/pdf",
-                //                Disposition = "attachment"
-                //            });
+                await _emailService.SendWithAttachement(currentUser.Email, "Fisa beneficiar", body, result);                                                
 
                 return Result.Ok(true);
             }
