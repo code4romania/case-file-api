@@ -17,7 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CaseFile.Api.Business\CaseFile.Api.Business.csproj" />
     <ProjectReference Include="..\CaseFile.Api.Core\CaseFile.Api.Core.csproj" />
     <ProjectReference Include="..\CaseFile.Api.Core\CaseFile.Api.Core.csproj" />
     <ProjectReference Include="..\CaseFile.Entities\CaseFile.Entities.csproj" />

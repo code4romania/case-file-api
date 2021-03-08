@@ -13,6 +13,7 @@
     <PackageReference Include="MediatR" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CaseFile.Api.Auth\CaseFile.Api.Auth.csproj" />
     <ProjectReference Include="..\CaseFile.Api.Core\CaseFile.Api.Core.csproj" />
     <ProjectReference Include="..\CaseFile.Entities\CaseFile.Entities.csproj" />
   </ItemGroup>

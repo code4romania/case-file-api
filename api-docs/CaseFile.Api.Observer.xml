@@ -6,7 +6,7 @@
     <members>
         <member name="M:CaseFile.Api.Business.Controllers.BeneficiaryController.NewBeneficiary(CaseFile.Api.Business.Models.NewBeneficiaryModel)">
             <summary>
-             Adds an beneficiary.
+             Adds a beneficiary.
             </summary>
             <param name="model"></param>
             <returns>Id of the new beneficiary</returns>
@@ -25,6 +25,34 @@
             <param name="beneficiaryId">The Beneficiary id</param>
             <returns>Boolean indicating whether or not the beneficiary was deleted successfully</returns>
         </member>
+        <member name="M:CaseFile.Api.Business.Controllers.NgoController.NewNgoRequest(CaseFile.Api.Business.Models.NewNgoRequestModel)">
+            <summary>
+             Adds a ngo request.
+            </summary>
+            <param name="model"></param>
+            <returns>The id of the new ngo request.</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.NgoController.ApproveNgoRequest(System.Int32)">
+            <summary>
+            Approve NGO request.
+            </summary>
+            <param name="requestId"></param>
+            <returns>Boolean indicating whether or not the request was successfully approved.</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.NgoController.RejectNgoRequest(System.Int32)">
+            <summary>
+            Reject NGO request.
+            </summary>
+            <param name="requestId"></param>
+            <returns>Boolean indicating whether or not the request was successfully rejected.</returns>
+        </member>
+        <member name="M:CaseFile.Api.Business.Controllers.StatisticsController.NewReport(CaseFile.Api.Business.Models.NewReportModel)">
+            <summary>
+             Adds a report.
+            </summary>
+            <param name="model"></param>
+            <returns>Id of the new report</returns>
+        </member>
         <member name="M:CaseFile.Api.Business.Controllers.UserController.NewUser(CaseFile.Api.Business.Models.NewUserModel)">
             <summary>
              Adds an user.
@@ -41,10 +69,10 @@
         </member>
         <member name="M:CaseFile.Api.Business.Controllers.UserController.DeactivateUser(System.Int32)">
             <summary>
-            Deletes an user.
+            Deactivates an user.
             </summary>
             <param name="userId">The User id</param>
-            <returns>Boolean indicating whether or not the user was deleted successfully</returns>
+            <returns>Boolean indicating whether or not the user was deactivated successfully</returns>
         </member>
         <member name="P:CaseFile.Api.Business.Models.ActiveObserverFilter.CountyCodes">
             <summary>

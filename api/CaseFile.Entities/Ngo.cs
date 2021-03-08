@@ -6,11 +6,6 @@ namespace CaseFile.Entities
 {
     public partial class Ngo
     {
-        //public Ngo()
-        //{
-        //    Users = new HashSet<User>();
-        //}
-
         public int NgoId { get; set; }
         public int? CreatedByUserId { get; set; }
         [MaxLength(10)]

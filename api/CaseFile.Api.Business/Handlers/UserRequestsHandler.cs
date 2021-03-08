@@ -68,11 +68,11 @@ namespace CaseFile.Api.Business.Handlers
                 await _context.SaveChangesAsync();
 
                 // send email with the generated temporary password to the new created user
-                var body = "Contul dumneavoastra pentru Dosarul Digital a fost creat cu succes. Aceasta este parola dumneavoastra temporara: "
+                var body = "Contul dumneavoastră pentru Dosarul Digital a fost creat cu succes. Această este parola dumneavoastră temporară: "
                     + password
-                    + " . Va rugam sa o schimbati cu o parola aleasa de dumneavoastra la prima folosire a aplicatiei.";
+                    + " . Va rugăm să o schimbați cu o parolă aleasă de dumneavoastră la prima folosire a aplicației.";
 
-                await _emailService.Send(currentUser.Email, "Creare cont", body);
+                await _emailService.Send(user.Email, "Creare cont", body);
 
                 return user.UserId;
             } 
@@ -116,10 +116,14 @@ namespace CaseFile.Api.Business.Handlers
             // check if the current / logged in user has the right to perform this action
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == request.CurrentUserId);
             if (currentUser.Role != Role.Admin && currentUser.Role != Role.NgoAdmin)
-                return false;
+                return false;            
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId);
             if (user == null)
+            {
+                return false;
+            }
+            if (currentUser.NgoId != user.NgoId)
             {
                 return false;
             }

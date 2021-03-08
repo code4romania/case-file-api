@@ -47,6 +47,7 @@ namespace CaseFile.Entities
         public string ResetToken { get; set; }
         public DateTime? ResetTokenExpires { get; set; }
         public DateTime? PasswordReset { get; set; }
+        public string TemporaryToken { get; set; }
 
         public virtual ICollection<Note> Notes { get; set; }
         public virtual ICollection<Answer> Answers { get; set; }        

@@ -83,7 +83,8 @@ namespace CaseFile.Api.Form.Queries
                     CurrentVersion = x.CurrentVersion,
                     UserName = x.CreatedByUser.Name,
                     Date = x.Date.ToString("dd.MM.yyyy"),
-                    CanBeModified = !_context.UserForms.Any(f => f.FormId == x.FormId) && x.CreatedByUserId == request.UserId
+                    CanBeModified = !_context.UserForms.Any(f => f.FormId == x.FormId) && x.CreatedByUserId == request.UserId,
+                    Type = x.Type
                 });
 
 

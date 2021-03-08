@@ -10,6 +10,8 @@ using CaseFile.Api.Form.Queries;
 using CaseFile.Api.Core;
 using AutoMapper;
 using CaseFile.Entities;
+using CaseFile.Api.Auth.Services;
+using System;
 
 namespace CaseFile.Api.Form.Controllers
 {
@@ -24,20 +26,25 @@ namespace CaseFile.Api.Form.Controllers
         private readonly ApplicationCacheOptions _cacheOptions;
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
+        private readonly ITokenService _tokenService;
 
         private int UserId => this.GetCurrentUserId();        
 
-        public FormController(IMediator mediator, IMapper mapper, IOptions<ApplicationCacheOptions> cacheOptions)
+        public FormController(IMediator mediator, IMapper mapper, IOptions<ApplicationCacheOptions> cacheOptions, ITokenService tokenService)
         {
             _cacheOptions = cacheOptions.Value;
             _mediator = mediator;
             _mapper = mapper;
+            _tokenService = tokenService;
         }
 
         [HttpPost]
         [Produces(type: typeof(int))]
         public async Task<IActionResult> AddForm([FromBody]FormDTO newForm)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             newForm.Draft = true;
             FormDTO result = await _mediator.Send(new AddFormQuery { Form = newForm, UserId = this.GetCurrentUserId() });
             return Ok(result.Id);
@@ -50,12 +57,20 @@ namespace CaseFile.Api.Form.Controllers
         [HttpGet]
         [Produces(type: typeof(FormVersionsModel))]
         public async Task<IActionResult> GetFormsAsync()
-            => Ok(new FormVersionsModel { FormVersions = await _mediator.Send(new FormVersionQuery(UserId)) });
+        {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
+             return Ok(new FormVersionsModel { FormVersions = await _mediator.Send(new FormVersionQuery(UserId)) });
+        }           
 
         [HttpGet("search")]
         [Produces(type: typeof(ApiListResponse<FormResultModel>))]
         public async Task<ApiListResponse<FormResultModel>> GetForms(FormListQuery query)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             var command = _mapper.Map<FormListCommand>(query);
             command.UserId = UserId;
 
@@ -74,6 +89,9 @@ namespace CaseFile.Api.Form.Controllers
         [Produces(type: typeof(IEnumerable<FormSectionDTO>))]
         public async Task<IEnumerable<FormSectionDTO>> GetFormAsync(int formId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             var result = await _mediator.Send(new FormQuestionQuery
             {
                 UserId = UserId,
@@ -90,6 +108,9 @@ namespace CaseFile.Api.Form.Controllers
         [Produces(type: typeof(bool))]
         public async Task<IActionResult> DeleteForm(int formId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -106,6 +127,9 @@ namespace CaseFile.Api.Form.Controllers
         [Produces(type: typeof(int))]
         public async Task<IActionResult> PublishForm([FromBody]FormDTO newForm)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

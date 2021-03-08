@@ -15,6 +15,7 @@ using CaseFile.Api.Extensions;
 using CaseFile.Entities;
 using CaseFile.Api.Auth.Services;
 using CaseFile.Api.Core.Services;
+using System;
 
 namespace CaseFile.Api
 {
@@ -36,7 +37,7 @@ namespace CaseFile.Api
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                                   builder =>
                                   {
-                                      builder.WithOrigins("http://localhost:4200", "https://app-casefile-frontend-test.azurewebsites.net", "https://app-casefile-frontend-prod.azurewebsites.net")
+                                      builder.WithOrigins("http://localhost:4200", "https://app-casefile-frontend-test.azurewebsites.net", "https://app-casefile-frontend-prod.azurewebsites.net", "https://dosaruldigital.ro", "https://www.dosaruldigital.ro")
                                             .AllowAnyMethod()
                                             .AllowAnyHeader()
                                             .AllowCredentials();
@@ -62,6 +63,14 @@ namespace CaseFile.Api
             services.AddSingleton<IAuthy, Authy>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ITokenService, TokenService>();
+
+            services.AddHsts(options =>
+            {
+                options.Preload = true;
+                options.IncludeSubDomains = true;
+                options.MaxAge = TimeSpan.FromDays(365);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,6 +82,15 @@ namespace CaseFile.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseHsts();
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("X-Frame-Options", "DENY");
+                await next.Invoke();
+            });
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -87,7 +105,7 @@ namespace CaseFile.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });
+            });            
         }
 
         private IEnumerable<Assembly> GetAssemblies()

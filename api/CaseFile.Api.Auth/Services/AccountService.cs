@@ -14,20 +14,20 @@ namespace CaseFile.Api.Auth.Services
     {            
         void ForgotPassword(ForgotPasswordRequest model, string origin);
         void ValidateResetToken(ValidateResetTokenRequest model);
-        void ResetPassword(ResetPasswordRequest model);            
+        void ResetPassword(ResetPasswordRequest model);
+        bool SaveTemporaryToken(int userId, string token);
+        User GetUser(int userId);
     }
 
     public class AccountService : IAccountService
     {
         private readonly CaseFileContext _context;
-        private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private IHashService _hashService;
 
-        public AccountService(CaseFileContext context, IMapper mapper, IEmailService emailService, IHashService hashService)
+        public AccountService(CaseFileContext context, IEmailService emailService, IHashService hashService)
         {
             _context = context;
-            _mapper = mapper;
             _emailService = emailService;
             _hashService = hashService;
         }
@@ -79,6 +79,29 @@ namespace CaseFile.Api.Auth.Services
             _context.SaveChanges();
         }
 
+        public bool SaveTemporaryToken(int userId, string token)
+        {
+            try
+            {
+                var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+
+                user.TemporaryToken = token;
+                _context.Users.Update(user);
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public User GetUser(int userId)
+        {
+            return _context.Users.FirstOrDefault(u => u.UserId == userId);
+        }
+
         private string RandomTokenString()
         {
             using var rngCryptoServiceProvider = new RNGCryptoServiceProvider();
@@ -94,7 +117,7 @@ namespace CaseFile.Api.Auth.Services
             if (!string.IsNullOrEmpty(origin))
             {
                 var resetUrl = $"{origin}/reset-password/{user.ResetToken}";
-                message = $@"<p>Va rugam sa folositi link-ul de mai jos pentru a va seta o parola noua. Link-ul va fi valid pentru 1 zi:</p>
+                message = $@"<p>Vă rugăm să folosiți link-ul de mai jos pentru a vă seta o parolă nouă. Link-ul va fi valid pentru 1 zi:</p>
                              <p><a href=""{resetUrl}"">{resetUrl}</a></p>";
             }
             else
@@ -105,8 +128,8 @@ namespace CaseFile.Api.Auth.Services
 
             _emailService.Send(
                 to: user.Email,
-                subject: "Resetare Parola",
-                body: $@"<h4>Resetare Parola</h4>
+                subject: "Resetare Parolă",
+                body: $@"<h4>Resetare Parolă</h4>
                          {message}"
             );
         }

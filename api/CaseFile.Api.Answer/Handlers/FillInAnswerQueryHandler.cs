@@ -47,6 +47,9 @@ namespace CaseFile.Api.Answer.Handlers
                     if (form.CompletionDate != message.CompletionDate)
                         form.CompletionDate = message.CompletionDate;
 
+                    if (message.CompletionDate.Year < 2000)
+                        form.CompletionDate = DateTime.UtcNow;
+
                     foreach (var beneficiaryId in beneficiarsIds)
                     {
                         var intrebari = message.Answers.Select(a => a.QuestionId).Distinct().ToList();

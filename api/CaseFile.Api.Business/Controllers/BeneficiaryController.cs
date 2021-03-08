@@ -7,11 +7,12 @@ using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CaseFile.Api.Core;
-using CaseFile.Api.Core.Commands;
 using CaseFile.Api.Core.Options;
 using CaseFile.Api.Business.Commands;
 using CaseFile.Api.Business.Models;
 using CaseFile.Api.Business.Queries;
+using CaseFile.Api.Auth.Services;
+using System;
 
 namespace CaseFile.Api.Business.Controllers
 {
@@ -22,22 +23,27 @@ namespace CaseFile.Api.Business.Controllers
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
         private readonly DefaultNgoOptions _defaultNgoOptions;
+        private readonly ITokenService _tokenService;
 
         //private int NgoId => this.GetIdOngOrDefault(_defaultNgoOptions.DefaultNgoId);
         private int UserId => this.GetCurrentUserId();
         
 
-        public BeneficiaryController(IMediator mediator, IMapper mapper, IOptions<DefaultNgoOptions> defaultNgoOptions)
+        public BeneficiaryController(IMediator mediator, IMapper mapper, IOptions<DefaultNgoOptions> defaultNgoOptions, ITokenService tokenService)
         {
             _mediator = mediator;
             _mapper = mapper;
             _defaultNgoOptions = defaultNgoOptions.Value;
+            _tokenService = tokenService;
         }
 
         [HttpGet]
         [Produces(type: typeof(ApiListResponse<BeneficiarySummaryModel>))]
         public async Task<ApiListResponse<BeneficiarySummaryModel>> GetBeneficiaries(BeneficiariesListQuery query)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             var command = _mapper.Map<BeneficiariesListCommand>(query);
 
             if (query.UserId > 0)
@@ -57,6 +63,9 @@ namespace CaseFile.Api.Business.Controllers
         [Route("details")]
         public async Task<ApiListResponse<BeneficiaryDetailsModel>> GetBeneficiariesWithDetails(BeneficiariesListQuery query)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             var command = _mapper.Map<BeneficiariesDetailsListCommand>(query);
 
             command.UserId = UserId;
@@ -70,12 +79,15 @@ namespace CaseFile.Api.Business.Controllers
         [Route("count")]
         public async Task<int> GetTotalBeneficiariesCount()
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             var result = await _mediator.Send(new BeneficiariesCountCommand { UserId = UserId });
             return result;
         }
 
         /// <summary>
-        ///  Adds an beneficiary.
+        ///  Adds a beneficiary.
         /// </summary>
         /// <param name="model"></param>
         /// <returns>Id of the new beneficiary</returns>
@@ -83,6 +95,9 @@ namespace CaseFile.Api.Business.Controllers
         [Produces(type: typeof(int))]
         public async Task<IActionResult> NewBeneficiary([FromBody]NewBeneficiaryModel model)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -104,6 +119,9 @@ namespace CaseFile.Api.Business.Controllers
         [Produces(type: typeof(bool))]
         public async Task<IActionResult> EditBeneficiary([FromBody]EditBeneficiaryModel model)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -111,6 +129,9 @@ namespace CaseFile.Api.Business.Controllers
             
             var command = _mapper.Map<EditBeneficiaryCommand>(model);
             command.CurrentUserId = UserId;
+            if (command.UserId <= 0)
+                command.UserId = UserId;
+
             var id = await _mediator.Send(command);
 
             return Ok(id > 0);
@@ -119,11 +140,14 @@ namespace CaseFile.Api.Business.Controllers
         [HttpGet("{beneficiaryId}")]
         [ProducesResponseType(typeof(BeneficiaryModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBeneficiaryAsync(int beneficiaryId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             var response = await _mediator.Send(new GetBeneficiary(beneficiaryId, UserId));
             if (response.IsSuccess)
             {
@@ -142,6 +166,9 @@ namespace CaseFile.Api.Business.Controllers
         [Produces(type: typeof(bool))]
         public async Task<IActionResult> DeleteBeneficiary(int beneficiaryId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -160,6 +187,9 @@ namespace CaseFile.Api.Business.Controllers
         [Route("sendFile")]
         public async Task<IActionResult> SendFile(int beneficiaryId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (beneficiaryId <= 0)
                 return BadRequest("Invalid beneficiary.");
 

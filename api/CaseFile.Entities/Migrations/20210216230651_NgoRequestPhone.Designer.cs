@@ -4,14 +4,16 @@ using CaseFile.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CaseFile.Entities.Migrations
 {
     [DbContext(typeof(CaseFileContext))]
-    partial class CaseFileContextModelSnapshot : ModelSnapshot
+    [Migration("20210216230651_NgoRequestPhone")]
+    partial class NgoRequestPhone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -407,98 +409,6 @@ namespace CaseFile.Entities.Migrations
                     b.ToTable("Questions");
                 });
 
-            modelBuilder.Entity("CaseFile.Entities.Report", b =>
-                {
-                    b.Property<int>("ReportId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ActiveCasesLastDayOfCurrentMonth")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ActiveCasesLastDayOfCurrentMonthUR")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ActiveCasesLastDayOfPreviousMonth")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ActiveCasesLastDayOfPreviousMonthUR")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Center")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ChildrenEighteenOrMoreNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChildrenFourteenToSeventeenNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChildrenLessThanOneNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChildrenOneToTwoNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChildrenSevenToNineNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChildrenTenToThirteenNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChildrenThreeToSixNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClosedCasesCurrentMonthAssistent")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClosedCasesCurrentMonthAssistentUR")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClosedCasesCurrentMonthFamily")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClosedCasesCurrentMonthFamilyUR")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClosedCasesCurrentMonthOtherOrg")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClosedCasesCurrentMonthOtherOrgUR")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("NewCasesCurrentMonth")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NewCasesCurrentMonthUR")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Period")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReportType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TotalChildrenNo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReportId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reports");
-                });
-
             modelBuilder.Entity("CaseFile.Entities.User", b =>
                 {
                     b.Property<int>("UserId")
@@ -717,15 +627,6 @@ namespace CaseFile.Entities.Migrations
                         .WithMany("Questions")
                         .HasForeignKey("SectionId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("CaseFile.Entities.Report", b =>
-                {
-                    b.HasOne("CaseFile.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

@@ -59,7 +59,6 @@ namespace CaseFile.Api.Extensions
             {
                 options.AddPolicy("NgoAdmin", policy => policy.RequireClaim(ClaimsHelper.UserType, UserType.NgoAdmin.ToString()));
                 options.AddPolicy("Email", policy => policy.RequireClaim(ClaimsHelper.UserType, UserType.Assistant.ToString()).RequireClaim(ClaimsHelper.UserIdProperty));
-                //options.AddPolicy("Organizer", policy => policy.RequireClaim(ClaimsHelper.Organizer, "true"));
             });
 
             return services;

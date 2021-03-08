@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using CaseFile.Api.Core.Options;
 using Microsoft.Extensions.Options;
+using CaseFile.Api.Auth.Services;
+using System;
 
 namespace CaseFile.Api.Note.Controllers
 {
@@ -29,24 +31,29 @@ namespace CaseFile.Api.Note.Controllers
         private readonly IMapper _mapper;
         private readonly IMediator _mediator;
         private readonly FileServiceOptions _localFileOptions;
+        private readonly ITokenService _tokenService;
 
-        public NoteController(IMediator mediator, IMapper mapper, IOptions<FileServiceOptions> options)
+        public NoteController(IMediator mediator, IMapper mapper, IOptions<FileServiceOptions> options, ITokenService tokenService)
         {
             _mediator = mediator;
             _mapper = mapper;
             _localFileOptions = options.Value;
+            _tokenService = tokenService;
         }
 
 
         [HttpGet]
         [ProducesResponseType(typeof(List<NoteModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<List<NoteModel>> Get(NoteQuery filter)
         {
-            if (!filter.UserId.HasValue)
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
+            if (!filter.UserId.HasValue || filter.UserId <= 0)
             {
                 filter.UserId = this.GetCurrentUserId();
             }
@@ -65,10 +72,13 @@ namespace CaseFile.Api.Note.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<dynamic> Upload([FromForm]UploadNoteModel note)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             if (!ModelState.IsValid)
             {
                 return this.ResultAsync(HttpStatusCode.BadRequest);
@@ -97,10 +107,13 @@ namespace CaseFile.Api.Note.Controllers
         [HttpGet("upload")]
         [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Upload(string filename)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             if (!string.IsNullOrEmpty(filename))
             {
                 var fullPath = _localFileOptions.StoragePaths[UploadType.Notes.ToString()] + "\\" + filename;

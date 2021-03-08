@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CaseFile.Api.Answer.Commands;
@@ -10,8 +9,7 @@ using CaseFile.Api.Answer.Queries;
 using CaseFile.Api.Core;
 using Microsoft.AspNetCore.Http;
 using System;
-using Microsoft.AspNetCore.Server.IIS;
-using System.Net;
+using CaseFile.Api.Auth.Services;
 
 namespace CaseFile.Api.Answer.Controllers
 {
@@ -20,10 +18,12 @@ namespace CaseFile.Api.Answer.Controllers
     public class AnswersController : Controller
     {
         private readonly IMediator _mediator;
+        private readonly ITokenService _tokenService;
 
-        public AnswersController(IMediator mediator)
+        public AnswersController(IMediator mediator, ITokenService tokenService)
         {
             _mediator = mediator;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -32,10 +32,13 @@ namespace CaseFile.Api.Answer.Controllers
         [HttpGet("filledIn")]
         [ProducesResponseType(typeof(List<QuestionDTO<FilledInAnswerDTO>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<List<QuestionDTO<FilledInAnswerDTO>>> Get(int beneficiaryId, int userId, int? formId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             if (beneficiaryId <= 0)
                 throw new ArgumentException();
 
@@ -61,10 +64,13 @@ namespace CaseFile.Api.Answer.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> PostAnswer([FromBody] AnswerModelWrapper answerModel)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

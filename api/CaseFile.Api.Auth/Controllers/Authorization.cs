@@ -16,7 +16,6 @@ using CaseFile.Api.Core;
 using CaseFile.Api.Core.Models;
 using CaseFile.Api.Core.Options;
 using CaseFile.Api.Auth.Services;
-using CaseFile.Api.Business.Queries;
 
 namespace CaseFile.Api.Auth.Controllers
 {
@@ -60,7 +59,7 @@ namespace CaseFile.Api.Auth.Controllers
 
             string token;
 
-            // verific daca userul exista si daca da, il returneaza din baza
+            // verific daca userul exista si daca da, il returneaza din baza de date
             var userInfo = await _mediator.Send(new ApplicationUser
             {
                 Email = request.Email,
@@ -69,8 +68,9 @@ namespace CaseFile.Api.Auth.Controllers
 
             ClaimsIdentity identity;
             if (!userInfo.IsAuthenticated)
-            {
-                identity = await Task.FromResult<ClaimsIdentity>(null);
+            {                
+                _logger.LogInformation($"Invalid username ({request.Email}) or password ({request.Password})");
+                return Unauthorized("Invalid credentials");                
             }
 
             // Get the generic claims
@@ -87,7 +87,11 @@ namespace CaseFile.Api.Auth.Controllers
                 return Unauthorized("Invalid credentials");
             }
 
-            token = GetTokenFromIdentity(identity);
+            token = GetTokenFromIdentity(identity, _jwtOptions.IssuedAt.Add(TimeSpan.FromHours(0.5)));
+
+            // save the temporary token
+            if (!_accountService.SaveTemporaryToken(userInfo.UserId, token))
+                return Unauthorized("Token issue");           
 
             var phone = userInfo.Phone.StartsWith('0') ? userInfo.Phone.Remove(0, 1) : userInfo.Phone;
 
@@ -100,7 +104,7 @@ namespace CaseFile.Api.Auth.Controllers
             var response = new AuthenticationResponseModel
             {
                 access_token = token,
-                expires_in = (int)_jwtOptions.ValidFor.TotalSeconds,
+                expires_in = (int)TimeSpan.FromHours(0.5).TotalSeconds,        //(int)_jwtOptions.ValidFor.TotalSeconds,
                 first_login = userInfo.FirstAuthentication,
                 phone_verification_request = result
             };
@@ -117,10 +121,10 @@ namespace CaseFile.Api.Auth.Controllers
             if (ModelState.IsValid)
             {
                 var userId = User.Claims.First(c => c.Type == ClaimsHelper.UserIdProperty).Value;
-                var response = await _mediator.Send(new GetUser(int.Parse(userId)));
-                if (response.IsSuccess)
+                var user = _accountService.GetUser(int.Parse(userId));
+                if (user != null)
                 {
-                    var phone = response.Value.Phone.StartsWith('0') ? response.Value.Phone.Remove(0, 1) : response.Value.Phone;
+                    var phone = user.Phone.StartsWith('0') ? user.Phone.Remove(0, 1) : user.Phone;
 
                     var validationResult = await _authy.VerifyPhoneTokenAsync(
                         phone,
@@ -128,11 +132,33 @@ namespace CaseFile.Api.Auth.Controllers
                         tokenVerification.Token
                     );
 
-                    return Ok(validationResult);
+                    if (validationResult.Succeeded)
+                    {
+                        // Create the JWT security token and encode it.
+                        var jwt = new JwtSecurityToken(
+                            issuer: _jwtOptions.Issuer,
+                            audience: _jwtOptions.Audience,
+                            claims: User.Claims,
+                            notBefore: _jwtOptions.NotBefore,
+                            expires: _jwtOptions.Expiration,
+                            signingCredentials: _jwtOptions.SigningCredentials);
+
+                        var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+                        return Ok(new
+                        {
+                            access_token = encodedJwt,
+                            expires_in = (int)_jwtOptions.ValidFor.TotalSeconds,
+                        });
+                    }
+                    else
+                    {
+                        return Ok(validationResult);
+                    }
                 }
                 else
                 {
-                    return BadRequest(response.Error);
+                    return BadRequest(); // NotFound();
                 }
             }
             else
@@ -148,10 +174,10 @@ namespace CaseFile.Api.Auth.Controllers
         public async Task<ActionResult> ResendPhoneVerificationRequest()
         {            
             var userId = User.Claims.First(c => c.Type == ClaimsHelper.UserIdProperty).Value;
-            var response = await _mediator.Send(new GetUser(int.Parse(userId)));
-            if (response.IsSuccess)
+            var user = _accountService.GetUser(int.Parse(userId));
+            if (user != null)
             {
-                var phone = response.Value.Phone.StartsWith('0') ? response.Value.Phone.Remove(0, 1) : response.Value.Phone;
+                var phone = user.Phone.StartsWith('0') ? user.Phone.Remove(0, 1) : user.Phone;
 
                 string result = await _authy.PhoneVerificationRequestAsync(
                                 "+40",
@@ -162,7 +188,7 @@ namespace CaseFile.Api.Auth.Controllers
             }
             else
             {
-                return BadRequest(response.Error);
+                return BadRequest();   // NotFound();
             }            
         }
 
@@ -264,7 +290,7 @@ namespace CaseFile.Api.Auth.Controllers
                 });
         }
 
-        private string GetTokenFromIdentity(ClaimsIdentity identity)
+        private string GetTokenFromIdentity(ClaimsIdentity identity, DateTime expiration)
         {
             // Create the JWT security token and encode it.
             var jwt = new JwtSecurityToken(
@@ -272,7 +298,7 @@ namespace CaseFile.Api.Auth.Controllers
                 audience: _jwtOptions.Audience,
                 claims: identity.Claims,
                 notBefore: _jwtOptions.NotBefore,
-                expires: _jwtOptions.Expiration,
+                expires: expiration,           //_jwtOptions.Expiration,
                 signingCredentials: _jwtOptions.SigningCredentials);
 
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);

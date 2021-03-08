@@ -12,6 +12,8 @@ using CaseFile.Api.Core.Options;
 using CaseFile.Api.Business.Commands;
 using CaseFile.Api.Business.Models;
 using CaseFile.Api.Business.Queries;
+using CaseFile.Api.Auth.Services;
+using System;
 
 namespace CaseFile.Api.Business.Controllers
 {
@@ -22,22 +24,27 @@ namespace CaseFile.Api.Business.Controllers
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
         private readonly DefaultNgoOptions _defaultNgoOptions;
+        private readonly ITokenService _tokenService;
 
         private int NgoId => this.GetIdOngOrDefault(_defaultNgoOptions.DefaultNgoId);
 
         private int UserId => this.GetCurrentUserId();
 
-        public UserController(IMediator mediator, IMapper mapper, IOptions<DefaultNgoOptions> defaultNgoOptions)
+        public UserController(IMediator mediator, IMapper mapper, IOptions<DefaultNgoOptions> defaultNgoOptions, ITokenService tokenService)
         {
             _mediator = mediator;
             _mapper = mapper;
             _defaultNgoOptions = defaultNgoOptions.Value;
+            _tokenService = tokenService;
         }
 
         [HttpGet]
         [Produces(type: typeof(ApiListResponse<UserModel>))]
         public async Task<ApiListResponse<UserModel>> GetUsers(UserListQuery query)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             var command = _mapper.Map<UserListCommand>(query);
 
             command.NgoId = NgoId;
@@ -51,6 +58,9 @@ namespace CaseFile.Api.Business.Controllers
         [Route("count")]
         public async Task<int> GetTotalUserCount()
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             var result = await _mediator.Send(new UserCountCommand { NgoId = NgoId });
             return result;
         }
@@ -64,6 +74,9 @@ namespace CaseFile.Api.Business.Controllers
         [Produces(type: typeof(int))]
         public async Task<IActionResult> NewUser([FromBody]NewUserModel model)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                throw new UnauthorizedAccessException();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -89,6 +102,9 @@ namespace CaseFile.Api.Business.Controllers
         [Produces(type: typeof(bool))]
         public async Task<IActionResult> EditUser([FromBody]EditUserModel model)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -101,11 +117,11 @@ namespace CaseFile.Api.Business.Controllers
             return Ok(id > 0);
         }
 
-        /// <summary>
-        /// Deletes an user.
-        /// </summary>
-        /// <param name="userId">The User id</param>
-        /// <returns>Boolean indicating whether or not the user was deleted successfully</returns>
+        ///// <summary>
+        ///// Deletes an user.
+        ///// </summary>
+        ///// <param name="userId">The User id</param>
+        ///// <returns>Boolean indicating whether or not the user was deleted successfully</returns>
         //[HttpDelete]
         //[Produces(type: typeof(bool))]
         //public async Task<IActionResult> DeleteUser(int userId)
@@ -122,11 +138,19 @@ namespace CaseFile.Api.Business.Controllers
         //    return Ok(result);
         //}
 
+        /// <summary>
+        /// Deactivates an user.
+        /// </summary>
+        /// <param name="userId">The User id</param>
+        /// <returns>Boolean indicating whether or not the user was deactivated successfully</returns>
         [HttpPost]
         [Route("deactivate")]
         [Produces(type: typeof(bool))]
         public async Task<IActionResult> DeactivateUser([FromBody]int userId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -146,6 +170,9 @@ namespace CaseFile.Api.Business.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Reset([FromBody]ResetModel model)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             if (string.IsNullOrEmpty(model.NewPassword) || string.IsNullOrEmpty(model.ConfirmPassword) 
                 || model.NewPassword != model.ConfirmPassword)
             {
@@ -171,10 +198,13 @@ namespace CaseFile.Api.Business.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(UserInfoModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [Route("info")]
         public async Task<IActionResult> GetUserAsync()
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             var response = await _mediator.Send(new GetUser(UserId));
             if (response.IsSuccess)
             {
@@ -187,9 +217,12 @@ namespace CaseFile.Api.Business.Controllers
         [HttpGet("{userId}")]
         [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUserById(int userId)
         {
+            if (!this.IsTokenValid(_tokenService.GetTemporaryToken(this.GetCurrentUserId())))
+                return Unauthorized();
+
             var response = await _mediator.Send(new GetUser(userId));
             if (response.IsSuccess)
             {

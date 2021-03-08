@@ -1,4 +1,5 @@
 ﻿
+using CaseFile.Entities;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -34,6 +35,8 @@ namespace CaseFile.Api.Form.Models
     {
         [JsonProperty(PropertyName = "canBeModified")]
         public bool CanBeModified { get; set; }
+        [JsonProperty(PropertyName = "type")]
+        public FormType Type { get; set; }
     }
 
 }

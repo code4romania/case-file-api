@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CaseFile.Api.Auth\CaseFile.Api.Auth.csproj" />
     <ProjectReference Include="..\CaseFile.Api.Core\CaseFile.Api.Core.csproj" />
     <ProjectReference Include="..\CaseFile.Entities\CaseFile.Entities.csproj" />
   </ItemGroup>

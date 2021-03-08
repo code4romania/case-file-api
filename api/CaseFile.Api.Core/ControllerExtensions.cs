@@ -38,5 +38,15 @@ namespace CaseFile.Api.Core
 
             return Task.FromResult(controller.BadRequest(modelState));
         }
+
+        public static bool IsTokenValid(this Controller controller, string temporaryToken)
+        {
+            var requestToken = controller.Request.Headers["Authorization"].ToString().Split(' ')[1];
+
+            if (temporaryToken == requestToken)
+                return false;
+
+            return true;
+        }
     }
 }

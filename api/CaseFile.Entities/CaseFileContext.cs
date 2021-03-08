@@ -112,14 +112,8 @@ namespace CaseFile.Entities
         public virtual DbSet<City> Cities { get; set; }
         public virtual DbSet<Family> Families { get; set; }
         public virtual DbSet<UserForm> UserForms { get; set; }
+        public virtual DbSet<NgoRequest> NgoRequests { get; set; }
+        public virtual DbSet<Report> Reports { get; set; }
 
-        //public class AnswerQueryInfo
-        //{
-        //    public int IdPollingStation { get; set; }
-        //    public int IdObserver { get; set; }
-        //    public string ObserverName { get; set; }
-        //    public string PollingStation { get; set; }
-        //    public DateTime LastModified { get; set; }
-        //}
     }
 }

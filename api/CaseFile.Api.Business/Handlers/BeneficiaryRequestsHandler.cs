@@ -461,9 +461,9 @@ namespace CaseFile.Api.Business.Handlers
                 }
 
                 // send mail with beneficiary info pdf
-                var body = "Regasiti atasat formularele completate pentru beneficiarul " + beneficiary.Name;
+                var body = "Regăsiți atașat formularele completate pentru beneficiarul " + beneficiary.Name;
 
-                await _emailService.SendWithAttachement(currentUser.Email, "Fisa beneficiar", body, result);                                                
+                await _emailService.SendWithAttachement(currentUser.Email, "Fișă beneficiar", body, result);                                                
 
                 return Result.Ok(true);
             }
